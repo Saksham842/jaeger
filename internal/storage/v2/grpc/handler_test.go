@@ -892,3 +892,43 @@ func TestHandler_GetCapabilities(t *testing.T) {
 		})
 	}
 }
+
+func TestHandler_NilQueryHandling(t *testing.T) {
+	handler := NewHandler(new(tracestoremocks.Reader), new(tracestoremocks.Writer), new(depstoremocks.Reader))
+
+	t.Run("FindTraces with nil request", func(t *testing.T) {
+		err := handler.FindTraces(nil, &testStream{})
+		require.Error(t, err)
+		assert.Equal(t, codes.InvalidArgument, status.Code(err))
+	})
+
+	t.Run("FindTraces with nil query", func(t *testing.T) {
+		err := handler.FindTraces(&storage.FindTracesRequest{Query: nil}, &testStream{})
+		require.Error(t, err)
+		assert.Equal(t, codes.InvalidArgument, status.Code(err))
+	})
+
+	t.Run("FindTraceSummaries with nil request", func(t *testing.T) {
+		err := handler.FindTraceSummaries(nil, &summaryStream{})
+		require.Error(t, err)
+		assert.Equal(t, codes.InvalidArgument, status.Code(err))
+	})
+
+	t.Run("FindTraceSummaries with nil query", func(t *testing.T) {
+		err := handler.FindTraceSummaries(&storage.FindTraceSummariesRequest{Query: nil}, &summaryStream{})
+		require.Error(t, err)
+		assert.Equal(t, codes.InvalidArgument, status.Code(err))
+	})
+
+	t.Run("FindTraceIDs with nil request", func(t *testing.T) {
+		_, err := handler.FindTraceIDs(context.Background(), nil)
+		require.Error(t, err)
+		assert.Equal(t, codes.InvalidArgument, status.Code(err))
+	})
+
+	t.Run("FindTraceIDs with nil query", func(t *testing.T) {
+		_, err := handler.FindTraceIDs(context.Background(), &storage.FindTraceIDsRequest{Query: nil})
+		require.Error(t, err)
+		assert.Equal(t, codes.InvalidArgument, status.Code(err))
+	})
+}
